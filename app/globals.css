@@ -67,38 +67,44 @@ body {
     print-color-adjust: exact !important;
   }
 
-  .no-print {
+  /* Force hide all screen UI elements completely */
+  .no-print,
+  .no-print * {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
   }
 
-  .print-only {
+  /* Display only the dedicated print CV container */
+  #print-cv-document {
     display: block !important;
-  }
-
-  #cv-preview-wrapper {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    transform: none !important;
+    visibility: visible !important;
     width: 210mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    position: static !important;
   }
 
-  .a4-page-sheet {
+  #print-cv-document * {
+    visibility: visible !important;
+  }
+
+  #print-cv-document .a4-page-sheet {
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
     width: 210mm !important;
     min-height: 297mm !important;
-    margin: 0 !important;
-    page-break-after: always;
-    break-after: page;
+    margin: 0 auto !important;
+    background: #ffffff !important;
   }
 
-  .a4-page-sheet:last-child {
-    page-break-after: auto;
-    break-after: auto;
+  .break-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
   a {

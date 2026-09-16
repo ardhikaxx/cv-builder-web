@@ -13,6 +13,7 @@ import { EditorPanel } from '@/components/editor/EditorPanel';
 import { CVPreviewContainer } from '@/components/preview/CVPreviewContainer';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { ATSScoreModal } from '@/components/common/ATSScoreModal';
+import { CVDocument } from '@/components/preview/CVDocument';
 
 export function CVBuilder() {
   const { showToast } = useToast();
@@ -67,9 +68,17 @@ export function CVBuilder() {
   // Handler: Print / Download PDF
   const handlePrint = useCallback(() => {
     if (typeof window !== 'undefined') {
+      const originalTitle = document.title;
+      const candidateName = cvData.personal.fullName.trim()
+        ? cvData.personal.fullName.trim().replace(/[^a-zA-Z0-9]/g, '_')
+        : 'Alex_Pratama';
+      document.title = `CV_${candidateName}_ATS`;
       window.print();
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 1500);
     }
-  }, []);
+  }, [cvData.personal.fullName]);
 
   // Handler: Load Sample CV
   const handleLoadSample = useCallback(() => {
@@ -179,69 +188,77 @@ export function CVBuilder() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
-      {/* Top Navigation */}
-      <Navbar
-        analysis={analysis}
-        onLoadSample={handleLoadSample}
-        onStartScratch={handleStartScratch}
-        onReset={handleReset}
-        onExport={handleExport}
-        onImport={handleImportFile}
-        onOpenATSModal={() => setIsATSModalOpen(true)}
-        onPrint={handlePrint}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+    <>
+      {/* Web Interactive Screen UI - Completely hidden during print */}
+      <div className="no-print min-h-screen flex flex-col bg-[#f8fafc]">
+        {/* Top Navigation */}
+        <Navbar
+          analysis={analysis}
+          onLoadSample={handleLoadSample}
+          onStartScratch={handleStartScratch}
+          onReset={handleReset}
+          onExport={handleExport}
+          onImport={handleImportFile}
+          onOpenATSModal={() => setIsATSModalOpen(true)}
+          onPrint={handlePrint}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
 
-      {/* Main Workspace Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6">
-        {/* Desktop: Two-Column Split Layout */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Left Column: Form Editor (Visible on desktop or when activeTab is 'editor' on mobile) */}
-          <div
-            className={`w-full lg:w-[480px] xl:w-[500px] shrink-0 ${
-              activeTab === 'editor' ? 'block' : 'hidden lg:block'
-            }`}
-          >
-            <EditorPanel
-              cvData={cvData}
-              onChange={setCvData}
-              analysis={analysis}
-              onOpenATSModal={() => setIsATSModalOpen(true)}
-            />
-          </div>
+        {/* Main Workspace Layout */}
+        <div className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6">
+          {/* Desktop: Two-Column Split Layout */}
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            {/* Left Column: Form Editor (Visible on desktop or when activeTab is 'editor' on mobile) */}
+            <div
+              className={`w-full lg:w-[480px] xl:w-[500px] shrink-0 ${
+                activeTab === 'editor' ? 'block' : 'hidden lg:block'
+              }`}
+            >
+              <EditorPanel
+                cvData={cvData}
+                onChange={setCvData}
+                analysis={analysis}
+                onOpenATSModal={() => setIsATSModalOpen(true)}
+              />
+            </div>
 
-          {/* Right Column: Live A4 Preview (Visible on desktop or when activeTab is 'preview' on mobile) */}
-          <div
-            className={`w-full lg:flex-1 min-w-0 lg:sticky lg:top-20 lg:h-[calc(100vh-100px)] ${
-              activeTab === 'preview' ? 'block' : 'hidden lg:block'
-            }`}
-          >
-            <CVPreviewContainer data={cvData} onPrint={handlePrint} />
+            {/* Right Column: Live A4 Preview (Visible on desktop or when activeTab is 'preview' on mobile) */}
+            <div
+              className={`w-full lg:flex-1 min-w-0 lg:sticky lg:top-20 lg:h-[calc(100vh-100px)] ${
+                activeTab === 'preview' ? 'block' : 'hidden lg:block'
+              }`}
+            >
+              <CVPreviewContainer data={cvData} onPrint={handlePrint} />
+            </div>
           </div>
         </div>
+
+        {/* Confirmation Modal */}
+        <ConfirmModal
+          isOpen={confirmModalConfig.isOpen}
+          title={confirmModalConfig.title}
+          message={confirmModalConfig.message}
+          confirmLabel={confirmModalConfig.confirmLabel}
+          variant={confirmModalConfig.variant}
+          onConfirm={confirmModalConfig.onConfirm}
+          onCancel={() => {
+            setConfirmModalConfig(prev => ({ ...prev, isOpen: false }));
+          }}
+        />
+
+        {/* ATS Readiness Audit Modal */}
+        <ATSScoreModal
+          isOpen={isATSModalOpen}
+          onClose={() => setIsATSModalOpen(false)}
+          analysis={analysis}
+        />
       </div>
 
-      {/* Confirmation Modal */}
-      <ConfirmModal
-        isOpen={confirmModalConfig.isOpen}
-        title={confirmModalConfig.title}
-        message={confirmModalConfig.message}
-        confirmLabel={confirmModalConfig.confirmLabel}
-        variant={confirmModalConfig.variant}
-        onConfirm={confirmModalConfig.onConfirm}
-        onCancel={() => {
-          setConfirmModalConfig(prev => ({ ...prev, isOpen: false }));
-        }}
-      />
-
-      {/* ATS Readiness Audit Modal */}
-      <ATSScoreModal
-        isOpen={isATSModalOpen}
-        onClose={() => setIsATSModalOpen(false)}
-        analysis={analysis}
-      />
-    </div>
+      {/* Dedicated Print Mount Area - strictly CV content only rendered during window.print() */}
+      <div id="print-cv-document" className="hidden print:block">
+        <CVDocument data={cvData} id="cv-print-mount" />
+      </div>
+    </>
   );
 }

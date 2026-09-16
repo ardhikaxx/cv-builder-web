@@ -6,6 +6,7 @@ import { cleanUrl, formatDateRange } from '@/lib/dateFormatter';
 
 interface CVDocumentProps {
   data: CVData;
+  id?: string;
 }
 
 interface SpacingTokens {
@@ -21,7 +22,7 @@ interface SpacingTokens {
 
 const SPACING_CONFIG: Record<'compact' | 'normal' | 'spacious', SpacingTokens> = {
   compact: {
-    padding: 'p-[14mm_16mm]',
+    padding: 'py-[14mm] px-[16mm]',
     sectionMargin: 'mb-3',
     itemMargin: 'mb-2',
     lineHeight: 'leading-snug',
@@ -31,7 +32,7 @@ const SPACING_CONFIG: Record<'compact' | 'normal' | 'spacious', SpacingTokens> =
     headingSize: 'text-xs',
   },
   normal: {
-    padding: 'p-[18mm_20mm]',
+    padding: 'py-[18mm] px-[20mm]',
     sectionMargin: 'mb-4',
     itemMargin: 'mb-2.5',
     lineHeight: 'leading-normal',
@@ -41,7 +42,7 @@ const SPACING_CONFIG: Record<'compact' | 'normal' | 'spacious', SpacingTokens> =
     headingSize: 'text-[12.5px]',
   },
   spacious: {
-    padding: 'p-[20mm_22mm]',
+    padding: 'py-[20mm] px-[22mm]',
     sectionMargin: 'mb-5',
     itemMargin: 'mb-3.5',
     lineHeight: 'leading-relaxed',
@@ -52,7 +53,7 @@ const SPACING_CONFIG: Record<'compact' | 'normal' | 'spacious', SpacingTokens> =
   },
 };
 
-export function CVDocument({ data }: CVDocumentProps) {
+export function CVDocument({ data, id }: CVDocumentProps) {
   const { personal, summary, education, experience, organization, projects, skills, certifications, achievements, languages, additional, sectionOrder, settings } = data;
 
   // Font class mapping
@@ -473,7 +474,7 @@ export function CVDocument({ data }: CVDocumentProps) {
 
   return (
     <div
-      id="cv-print-area"
+      id={id || 'cv-print-area'}
       className={`a4-page-sheet ${fontClass} ${spacingConfig.padding} shadow-md print:shadow-none mx-auto`}
     >
       {/* CV Header */}
