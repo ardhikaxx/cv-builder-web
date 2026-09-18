@@ -40,7 +40,9 @@ body {
   background-color: #ffffff;
   color: #111827;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  border-bottom: 2px dashed #cbd5e1;
+  padding: 15mm 18mm;
 }
 
 /* Prevent item break across pages */
@@ -49,10 +51,16 @@ body {
   break-inside: avoid;
 }
 
+/* Prevent heading being orphaned at the bottom of a page */
+.break-after-avoid {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+
 /* Print Stylesheet */
 @page {
   size: A4 portrait;
-  margin: 0;
+  margin: 15mm 18mm;
 }
 
 @media print {
@@ -61,8 +69,10 @@ body {
     padding: 0 !important;
     background: #ffffff !important;
     color: #000000 !important;
-    width: 210mm !important;
-    min-height: 297mm !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -81,8 +91,11 @@ body {
   #print-cv-document {
     display: block !important;
     visibility: visible !important;
-    width: 210mm !important;
-    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
     position: static !important;
@@ -96,15 +109,34 @@ body {
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
-    width: 210mm !important;
-    min-height: 297mm !important;
-    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: #ffffff !important;
+    overflow: visible !important;
   }
 
   .break-avoid {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+
+  .break-after-avoid {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
   a {

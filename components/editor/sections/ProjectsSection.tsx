@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ProjectItem } from '@/types/cv';
 import { TextInput } from '@/components/common/FormField';
 import { ItemControls, AddItemButton } from '@/components/common/ActionButtons';
@@ -51,7 +51,9 @@ export function ProjectsSection({ items, onChange }: ProjectsSectionProps) {
   };
 
   const updateTechStackString = (index: number, raw: string) => {
+    const hasTrailingComma = raw.endsWith(',');
     const split = raw.split(',').map(s => s.trim()).filter(Boolean);
+    if (hasTrailingComma) split.push('');
     updateItem(index, 'techStack', split);
   };
 
@@ -73,6 +75,26 @@ export function ProjectsSection({ items, onChange }: ProjectsSectionProps) {
     onChange(updated);
   };
 
+  const parseStartDate = (dateStr: string): number => {
+    if (!dateStr) return -1;
+    const months: Record<string, number> = {
+      'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'Mei': 5, 'Jun': 6,
+      'Jul': 7, 'Agu': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Des': 12,
+    };
+    const parts = dateStr.trim().split(/\s+/);
+    if (parts.length < 2) return -1;
+    const month = months[parts[0]];
+    const year = parseInt(parts[1]);
+    if (!month || isNaN(year)) return -1;
+    return year * 12 + month;
+  };
+
+  const sortedItems = useMemo(() => {
+    return [...items].sort((a, b) => parseStartDate(b.startDate) - parseStartDate(a.startDate));
+  }, [items]);
+
+  const getRealIndex = (itemId: string) => items.findIndex(i => i.id === itemId);
+
   return (
     <div className="space-y-4">
       <div className="p-3 bg-emerald-50/60 border border-emerald-200/70 rounded-lg text-xs text-emerald-900 flex items-start gap-2.5 leading-relaxed">
@@ -88,10 +110,12 @@ export function ProjectsSection({ items, onChange }: ProjectsSectionProps) {
         </div>
       )}
 
-      {items.map((item, index) => (
+      {sortedItems.map((item, displayIndex) => {
+        const index = getRealIndex(item.id);
+        return (
         <div key={item.id} className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
           <ItemControls
-            title={item.title ? `${item.title} (${item.role || 'Developer'})` : `Proyek #${index + 1}`}
+            title={item.title ? `${item.title} (${item.role || 'Developer'})` : `Proyek #${displayIndex + 1}`}
             onMoveUp={() => moveItem(index, 'up')}
             onMoveDown={() => moveItem(index, 'down')}
             onDelete={() => removeItem(index)}
@@ -198,7 +222,8 @@ export function ProjectsSection({ items, onChange }: ProjectsSectionProps) {
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
 
       <AddItemButton onClick={addItem} label="Tambah Proyek Portofolio" />
     </div>

@@ -93,7 +93,7 @@ export function CVDocument({ data, id }: CVDocumentProps) {
     switch (settings.template) {
       case 'modern':
         return (
-          <div className="mb-1.5 pb-1 border-b" style={{ borderColor: settings.accentColor }}>
+          <div className="mb-1.5 pb-1 border-b break-after-avoid" style={{ borderColor: settings.accentColor }}>
             <h2
               className={`font-bold tracking-wider uppercase ${spacingConfig.headingSize}`}
               style={{ color: settings.accentColor }}
@@ -104,7 +104,7 @@ export function CVDocument({ data, id }: CVDocumentProps) {
         );
       case 'minimal':
         return (
-          <div className="mb-1.5">
+          <div className="mb-1.5 break-after-avoid">
             <h2
               className={`font-bold tracking-wider uppercase ${spacingConfig.headingSize}`}
               style={{ color: settings.accentColor }}
@@ -115,7 +115,7 @@ export function CVDocument({ data, id }: CVDocumentProps) {
         );
       case 'executive':
         return (
-          <div className="mb-2 flex items-center gap-2">
+          <div className="mb-2 flex items-center gap-2 break-after-avoid">
             <h2
               className={`font-bold tracking-wider uppercase whitespace-nowrap ${spacingConfig.headingSize}`}
               style={{ color: settings.accentColor }}
@@ -128,7 +128,7 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'classic':
       default:
         return (
-          <div className="mb-1.5 pb-0.5 border-b border-gray-400">
+          <div className="mb-1.5 pb-0.5 border-b border-gray-400 break-after-avoid">
             <h2
               className={`font-bold tracking-wider uppercase ${spacingConfig.headingSize}`}
               style={{ color: settings.accentColor }}
@@ -158,8 +158,8 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'summary':
         if (!hasSummary) return null;
         return (
-          <section key="summary" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Professional Summary" />
+          <section key="summary" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Ringkasan Profesional" />
             <p className={`${spacingConfig.textSize} ${spacingConfig.lineHeight} text-gray-800 text-justify`}>
               {summary}
             </p>
@@ -169,12 +169,12 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'education':
         if (!hasEducation) return null;
         return (
-          <section key="education" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Education" />
+          <section key="education" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Pendidikan" />
             <div className="space-y-2">
               {education.map(item => {
                 if (!item.institution.trim()) return null;
-                const dateStr = formatDateRange(item.startDate, item.endDate, item.isCurrent, 'Expected Graduation');
+                const dateStr = formatDateRange(item.startDate, item.endDate, item.isCurrent, 'Sedang Berjalan');
 
                 return (
                   <div key={item.id} className={`break-avoid ${spacingConfig.itemMargin}`}>
@@ -189,10 +189,10 @@ export function CVDocument({ data, id }: CVDocumentProps) {
                     <div className="flex justify-between items-baseline">
                       <div className="text-[10.5px] text-gray-800 font-medium">
                         {item.degree}
-                        {item.fieldOfStudy && <span> in {item.fieldOfStudy}</span>}
+                        {item.fieldOfStudy && <span> — {item.fieldOfStudy}</span>}
                         {item.gpa && (
                           <span className="text-gray-700 font-semibold ml-1.5">
-                            (GPA: {item.gpa}{item.maxGpa ? `/${item.maxGpa}` : ''})
+                            (IPK: {item.gpa}{item.maxGpa ? `/${item.maxGpa}` : ''})
                           </span>
                         )}
                       </div>
@@ -213,15 +213,15 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'skills':
         if (!hasSkills) return null;
         return (
-          <section key="skills" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Technical & Professional Skills" />
+          <section key="skills" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Keahlian & Teknologi" />
             <div className="space-y-1">
               {skills.map(cat => {
                 const validSkills = cat.skills.filter(s => s.trim().length > 0);
                 if (validSkills.length === 0) return null;
 
                 return (
-                  <div key={cat.id} className="text-[10px] leading-tight">
+                  <div key={cat.id} className="text-[10px] leading-tight break-avoid">
                     <span className="font-bold text-gray-900">{cat.name}: </span>
                     <span className="text-gray-800">{validSkills.join(', ')}</span>
                   </div>
@@ -234,11 +234,24 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'projects':
         if (!hasProjects) return null;
         return (
-          <section key="projects" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Key Projects & Technical Portfolio" />
+          <section key="projects" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Proyek Portofolio" />
             <div className="space-y-2.5">
-              {projects.map(proj => {
-                if (!proj.title.trim()) return null;
+              {[...projects].filter(p => p.title.trim()).sort((a, b) => {
+                const parseDate = (d: string) => {
+                  if (!d) return -1;
+                  const months: Record<string, number> = {
+                    'Jan':1,'Feb':2,'Mar':3,'Apr':4,'Mei':5,'Jun':6,
+                    'Jul':7,'Agu':8,'Sep':9,'Okt':10,'Nov':11,'Des':12,
+                  };
+                  const p = d.trim().split(/\s+/);
+                  if (p.length < 2) return -1;
+                  const m = months[p[0]], y = parseInt(p[1]);
+                  if (!m || isNaN(y)) return -1;
+                  return y * 12 + m;
+                };
+                return parseDate(b.startDate) - parseDate(a.startDate);
+              }).map(proj => {
                 const dateStr = formatDateRange(proj.startDate, proj.endDate);
                 const validBullets = proj.bullets.filter(b => b.trim().length > 0);
 
@@ -274,8 +287,8 @@ export function CVDocument({ data, id }: CVDocumentProps) {
 
                     {proj.techStack && proj.techStack.length > 0 && (
                       <div className="text-[10px] text-gray-700 italic mt-0.5">
-                        <span className="font-semibold not-italic text-gray-800">Stack: </span>
-                        {proj.techStack.join(', ')}
+                        <span className="font-semibold not-italic text-gray-800">Teknologi: </span>
+                        {proj.techStack.filter(Boolean).join(', ')}
                       </div>
                     )}
 
@@ -298,12 +311,12 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'experience':
         if (!hasExperience) return null;
         return (
-          <section key="experience" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Work & Internship Experience" />
+          <section key="experience" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Pengalaman Kerja / Magang" />
             <div className="space-y-2.5">
               {experience.map(exp => {
                 if (!exp.position.trim()) return null;
-                const dateStr = formatDateRange(exp.startDate, exp.endDate, exp.isCurrent, 'Present');
+                const dateStr = formatDateRange(exp.startDate, exp.endDate, exp.isCurrent, 'Sekarang');
                 const validBullets = exp.bullets.filter(b => b.trim().length > 0);
 
                 return (
@@ -340,12 +353,12 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'organization':
         if (!hasOrganization) return null;
         return (
-          <section key="organization" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Leadership & Campus Organizations" />
+          <section key="organization" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Organisasi & Kepemimpinan" />
             <div className="space-y-2.5">
               {organization.map(org => {
                 if (!org.organization.trim()) return null;
-                const dateStr = formatDateRange(org.startDate, org.endDate, org.isCurrent, 'Present');
+                const dateStr = formatDateRange(org.startDate, org.endDate, org.isCurrent, 'Sekarang');
                 const validBullets = org.bullets.filter(b => b.trim().length > 0);
 
                 return (
@@ -378,8 +391,8 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'certifications':
         if (!hasCertifications) return null;
         return (
-          <section key="certifications" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Certifications & Licenses" />
+          <section key="certifications" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Sertifikasi" />
             <div className="space-y-1.5">
               {certifications.map(cert => {
                 if (!cert.name.trim()) return null;
@@ -392,7 +405,7 @@ export function CVDocument({ data, id }: CVDocumentProps) {
                   : '';
 
                 return (
-                  <div key={cert.id} className="flex justify-between items-baseline text-[10px]">
+                  <div key={cert.id} className="flex justify-between items-baseline text-[10px] break-avoid">
                     <div>
                       <span className="font-bold text-gray-900">{cert.name}</span>
                       {cert.issuer && <span className="text-gray-700"> — {cert.issuer}</span>}
@@ -409,14 +422,14 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'achievements':
         if (!hasAchievements) return null;
         return (
-          <section key="achievements" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Honors & Achievements" />
+          <section key="achievements" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Penghargaan & Prestasi" />
             <div className="space-y-1.5">
               {achievements.map(ach => {
                 if (!ach.title.trim()) return null;
 
                 return (
-                  <div key={ach.id} className="text-[10px]">
+                  <div key={ach.id} className="text-[10px] break-avoid">
                     <div className="flex justify-between items-baseline">
                       <span className="font-bold text-gray-900">
                         {ach.title}
@@ -435,9 +448,9 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'languages':
         if (!hasLanguages) return null;
         return (
-          <section key="languages" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Languages" />
-            <div className="text-[10px] text-gray-800">
+          <section key="languages" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Bahasa" />
+            <div className="text-[10px] text-gray-800 break-avoid">
               {languages.map((l, i) => (
                 <span key={l.id}>
                   <span className="font-bold text-gray-900">{l.language}</span> ({l.proficiency})
@@ -451,11 +464,11 @@ export function CVDocument({ data, id }: CVDocumentProps) {
       case 'additional':
         if (!hasAdditional) return null;
         return (
-          <section key="additional" className={`break-avoid ${spacingConfig.sectionMargin}`}>
-            <SectionHeader title="Additional Information" />
+          <section key="additional" className={spacingConfig.sectionMargin}>
+            <SectionHeader title="Informasi Tambahan" />
             <div className="space-y-1 text-[10px] text-gray-800">
               {additional.map(item => (
-                <div key={item.id}>
+                <div key={item.id} className="break-avoid">
                   <span className="font-bold text-gray-900">{item.title}: </span>
                   <span className="text-gray-700">{item.content}</span>
                 </div>
@@ -475,7 +488,7 @@ export function CVDocument({ data, id }: CVDocumentProps) {
   return (
     <div
       id={id || 'cv-print-area'}
-      className={`a4-page-sheet ${fontClass} ${spacingConfig.padding} shadow-md print:shadow-none mx-auto`}
+      className={`a4-page-sheet ${fontClass} shadow-md print:shadow-none mx-auto`}
     >
       {/* CV Header */}
       <header className={`break-avoid mb-3.5 ${isCentered ? 'text-center' : 'text-left'}`}>
