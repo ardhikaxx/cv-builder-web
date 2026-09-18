@@ -257,7 +257,7 @@ export function CVBuilder() {
 
       {/* Dedicated Print Mount Area - strictly CV content only rendered during window.print() */}
       <div id="print-cv-document" className="hidden print:block">
-        <CVDocument data={cvData} id="cv-print-mount" />
+        <CVDocument data={cvData} id="cv-print-mount" isPrintMount />
       </div>
     </>
   );

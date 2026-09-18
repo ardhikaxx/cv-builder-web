@@ -7,6 +7,7 @@ import { cleanUrl, formatDateRange } from '@/lib/dateFormatter';
 interface CVDocumentProps {
   data: CVData;
   id?: string;
+  isPrintMount?: boolean;
 }
 
 interface SpacingTokens {
@@ -53,7 +54,7 @@ const SPACING_CONFIG: Record<'compact' | 'normal' | 'spacious', SpacingTokens> =
   },
 };
 
-export function CVDocument({ data, id }: CVDocumentProps) {
+export function CVDocument({ data, id, isPrintMount }: CVDocumentProps) {
   const { personal, summary, education, experience, organization, projects, skills, certifications, achievements, languages, additional, sectionOrder, settings } = data;
 
   // Font class mapping
@@ -485,67 +486,99 @@ export function CVDocument({ data, id }: CVDocumentProps) {
   // Header layout alignment based on template
   const isCentered = settings.template === 'classic';
 
+  const headerContent = (
+    <header className={`break-avoid mb-3.5 ${isCentered ? 'text-center' : 'text-left'}`}>
+      <h1
+        className={`font-extrabold uppercase tracking-tight text-gray-950 ${spacingConfig.nameSize}`}
+        style={{ letterSpacing: '0.02em' }}
+      >
+        {personal.fullName || 'NAMA LENGKAP KANDIDAT'}
+      </h1>
+
+      {personal.headline && (
+        <p
+          className={`font-semibold tracking-wide mt-1 text-gray-700 ${spacingConfig.headSize}`}
+          style={{ color: settings.accentColor }}
+        >
+          {personal.headline}
+        </p>
+      )}
+
+      {/* Contact info bar */}
+      {contactParts.length > 0 && (
+        <div
+          className={`flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1.5 text-[10px] text-gray-700 ${
+            isCentered ? 'justify-center' : 'justify-start'
+          }`}
+        >
+          {contactParts.map((item, idx) => (
+            <React.Fragment key={idx}>
+              {idx > 0 && <span className="text-gray-400 select-none">•</span>}
+              {item.href ? (
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline text-gray-800 hover:text-blue-700"
+                >
+                  {item.text}
+                </a>
+              ) : (
+                <span>{item.text}</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+
+      {personal.additionalInfo && (
+        <p className="text-[9.5px] text-gray-500 italic mt-1">{personal.additionalInfo}</p>
+      )}
+    </header>
+  );
+
+  const mainContent = (
+    <main>
+      {sectionOrder
+        .filter(sec => sec.visible && sec.key !== 'personal')
+        .map(sec => renderSection(sec.key))}
+    </main>
+  );
+
+  if (isPrintMount) {
+    return (
+      <div id={id || 'cv-print-mount'} className={`print-container ${fontClass} mx-auto`}>
+        <table className="print-table">
+          <thead>
+            <tr>
+              <td className="print-table-header-space"></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="print-table-content">
+                {headerContent}
+                {mainContent}
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td className="print-table-footer-space"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    );
+  }
+
   return (
     <div
       id={id || 'cv-print-area'}
       className={`a4-page-sheet ${fontClass} shadow-md print:shadow-none mx-auto`}
     >
-      {/* CV Header */}
-      <header className={`break-avoid mb-3.5 ${isCentered ? 'text-center' : 'text-left'}`}>
-        <h1
-          className={`font-extrabold uppercase tracking-tight text-gray-950 ${spacingConfig.nameSize}`}
-          style={{ letterSpacing: '0.02em' }}
-        >
-          {personal.fullName || 'NAMA LENGKAP KANDIDAT'}
-        </h1>
-
-        {personal.headline && (
-          <p
-            className={`font-semibold tracking-wide mt-1 text-gray-700 ${spacingConfig.headSize}`}
-            style={{ color: settings.accentColor }}
-          >
-            {personal.headline}
-          </p>
-        )}
-
-        {/* Contact info bar */}
-        {contactParts.length > 0 && (
-          <div
-            className={`flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1.5 text-[10px] text-gray-700 ${
-              isCentered ? 'justify-center' : 'justify-start'
-            }`}
-          >
-            {contactParts.map((item, idx) => (
-              <React.Fragment key={idx}>
-                {idx > 0 && <span className="text-gray-400 select-none">•</span>}
-                {item.href ? (
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline text-gray-800 hover:text-blue-700"
-                  >
-                    {item.text}
-                  </a>
-                ) : (
-                  <span>{item.text}</span>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        )}
-
-        {personal.additionalInfo && (
-          <p className="text-[9.5px] text-gray-500 italic mt-1">{personal.additionalInfo}</p>
-        )}
-      </header>
-
-      {/* Main Content Sections dynamically sorted */}
-      <main>
-        {sectionOrder
-          .filter(sec => sec.visible && sec.key !== 'personal')
-          .map(sec => renderSection(sec.key))}
-      </main>
+      {headerContent}
+      {mainContent}
     </div>
   );
 }
